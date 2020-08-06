@@ -80,3 +80,41 @@ test_data_gen = test_image_generator.flow_from_directory(
                         class_mode=None,
                         shuffle=False
 )
+
+train_image_generator = ImageDataGenerator(
+    train_dir,
+    rescale=1./255,
+    zoom_range=0.6,
+    horizontal_flip=True,
+    vertical_flip=True,
+    rotation_range=0.7,
+    channel_shift_range=0.2
+)
+
+train_data_gen = train_image_generator.flow_from_directory(
+    train_dir,
+    batch_size=batch_size,
+    target_size=(IMG_HEIGHT, IMG_WEIGHT),
+    class_mode='binary'
+)
+
+model = Sequential()
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(IMG_HEIGHT, IMG_WEIGHT, 3)))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(32, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Flatten())
+model.add(Dense(1, activation='relu'))
+
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.BinaryCrossentropy(),
+              metrics=['accuracy']
+)
+
+print(model.summary())
