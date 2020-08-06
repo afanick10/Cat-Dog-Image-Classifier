@@ -118,3 +118,59 @@ model.compile(optimizer='adam',
 )
 
 print(model.summary())
+
+history = model.fit(train_data_gen,
+                    steps_per_epoch=15,
+                    epochs=epochs,
+                    validation_data=val_data_gen,
+                    validation_steps=2
+)
+
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs_range = range(epochs)
+
+plt.figure(figsize=(8, 8))
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
+
+probabilities = list(model.predict(test_data_gen).flatten())
+test_images = test_data_gen[0]
+plotImages(test_images, probabilities=probabilities)
+
+answers = [1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0,
+           1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0,
+           1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1,
+           1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1,
+           0, 0, 0, 0, 0, 0]
+
+correct = 0
+
+for probability, answer in zip(probabilities, answers):
+    if round(probability) == answer:
+        correct += 1
+
+percentage_identified = (correct / len(answers))
+
+passed_challenge = percentage_identified > 0.63
+
+print(f"Your model correctly identified {round(percentage_identified, 2) * 100}% of the images of cats and dogs.")
+
+if passed_challenge:
+    print("You passed the challenge!")
+else:
+    print("You haven't passed yet. Your model should identify at least 63% " + "of the images. Keep trying. You will get it!")
