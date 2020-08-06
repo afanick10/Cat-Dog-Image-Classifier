@@ -8,6 +8,22 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+def plotImages(images_arr, probabilities = False):
+    fig, axes = plt.subplots(len(images_arr), 1, figsize=(5, len(images_arr) * 3))
+    if probabilities is False:
+        for img, ax in zip(images_arr, axes):
+            ax.imshow(img)
+            ax.axis('off')
+    else:
+        for img, probability, ax in zip(images_arr, probabilities, axes):
+            ax.imshow(img)
+            ax.axis('off')
+            if probability > 0.5:
+                ax.set_title("%.2f" % (probability * 100) + "%" + " dog")
+            else:
+                ax.set_title("%.2f" % ((1 - probability) * 100) + "%" + " cat")
+    plt.show()
+
 URL = 'https://cdn.freecodecamp.org/project-data/cats-and-dogs/cats_and_dogs.zip'
 
 path_to_zip = tf.keras.utils.get_file('cats_and_dogs.zip', origin=URL, extract=True)
@@ -26,3 +42,41 @@ batch_size = 128
 epochs = 15
 IMG_HEIGHT = 150
 IMG_WEIGHT = 150
+
+train_image_generator = ImageDataGenerator(train_dir, rescale=1./255)
+validation_image_generator = ImageDataGenerator(validation_dir, rescale=1./255)
+test_image_generator = ImageDataGenerator(test_dir, rescale=1./255)
+
+new_dir = os.path.join(test_dir, 'data')
+if not os.path.isdir(new_dir):
+    os.mkdir(new_dir)
+
+for current_file in os.listdir(test_dir):
+    if os.path.isfile(test_dir + '/' + current_file):
+        original_file = open(test_dir + '/' + current_file, 'rb')
+        file_copy = open(new_dir + '/' + current_file, 'wb')
+        file_copy.write(original_file.read())
+        original_file.close()
+        file_copy.close()
+
+train_data_gen = train_image_generator.flow_from_directory(
+                        train_dir,
+                        batch_size=batch_size,
+                        target_size=(IMG_HEIGHT, IMG_WEIGHT),
+                        class_mode='binary'
+)
+
+val_data_gen = validation_image_generator.flow_from_directory(
+                        validation_dir,
+                        batch_size=batch_size,
+                        target_size=(IMG_HEIGHT, IMG_WEIGHT),
+                        class_mode='binary'
+)
+
+test_data_gen = test_image_generator.flow_from_directory(
+                        test_dir,
+                        batch_size=batch_size,
+                        target_size=(IMG_HEIGHT, IMG_WEIGHT),
+                        class_mode=None,
+                        shuffle=False
+)
